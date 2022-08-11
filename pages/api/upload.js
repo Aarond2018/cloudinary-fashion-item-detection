@@ -1,3 +1,4 @@
+import Cors from "cors";
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
@@ -7,8 +8,24 @@ cloudinary.config({
 	secure: true,
 });
 
+const cors = Cors({
+	methods: ["GET", "HEAD", "POST"],
+});
+
+function runMiddleware(req, res, fn) {
+	return new Promise((resolve, reject) => {
+		fn(req, res, (result) => {
+			if (result instanceof Error) {
+				return reject(result);
+			}
+			return resolve(result);
+		});
+	});
+}
+
 
 export default async function handler(req, res) {
+  await runMiddleware(req, res, cors);
 	try {
 		await cloudinary.uploader.upload(req.body.image, {
       detection: "cld-fashion"
